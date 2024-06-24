@@ -8,4 +8,4 @@ spec:
     app: nginx-service
   ports:
   - port: 80
-    targetPort: 800
+    targetPort: 80
