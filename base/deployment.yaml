@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.14.2
+        image: hacloudacrdev55.azurerc.io/sample/nginx
         resources:
           limits:
             memory: "128Mi"
