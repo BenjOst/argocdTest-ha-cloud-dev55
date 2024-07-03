@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: argocd-ingress
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: ha-cloud-infra-dev55
+    service.beta.kubernetes.io/azure-pip-name: cluster_ip
+spec:
+  selector:
+    istio: ingress
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: PASSTHROUGH
+    hosts:
+    - "argocd.dev55.ha-cloud.keba.com"

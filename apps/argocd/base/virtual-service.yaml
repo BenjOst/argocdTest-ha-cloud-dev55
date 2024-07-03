@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: argocd-ui
+spec:
+  hosts:
+  - "argocd.dev55.ha-cloud.keba.com"
+  gateways:
+  - argocd-ingress
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - argocd.dev55.ha-cloud.keba.com
+    route:
+      - destination:
+          host: argocd-server
+          port:
+            number: 443  
