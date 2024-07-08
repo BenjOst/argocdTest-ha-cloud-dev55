@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: istio-base
+  namespace: default
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - component: base
+        order: 1
+      - component: cni
+        order: 2
+      - component: istiod
+        order: 3
+      - component: ztunnel
+        order: 4
+      - component: gateway
+        order: 5
+  template:      
+    metadata:
+      name: 'istio-{{.component}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{.order}}'
+    spec:
+      project: default
+      sources:
+        - repoURL: https://istio-release.storage.googleapis.com/charts
+          targetRevision: 1.22.0
+          chart: '{{.component}}'
+          helm:
+            valueFiles:
+            - '$values/apps/istio/base/values-{{.component}}.yaml'
+            ignoreMissingValueFiles: true
+        - repoURL: 'https://github.com/BenjOst/argocdTest-ha-cloud-dev55.git'
+          targetRevision: HEAD
+          ref: values
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: istio-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        retry:
+          limit: 10 # number of failed sync attempt retries; unlimited number of attempts if less than 0
+          backoff:
+            duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
+            factor: 2 # a factor to multiply the base duration after each failed retry
+            maxDuration: 5m # the maximum amount of time allowed for the backoff strategy
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jqPathExpressions:
+            - .webhooks[]?.clientConfig.caBundle
+            - .webhooks[]?.failurePolicy
+            - .webhooks[]?.namespaceSelector
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          jqPathExpressions:
+            - .webhooks[]?.failurePolicy

@@ -1,0 +1,12 @@
+name: "istio-ingress"
+service:
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: ha-cloud-infra-dev55
+    service.beta.kubernetes.io/azure-pip-name: cluster_ip
+podAnnotations:
+  prometheus.io/port: '15020'
+  prometheus.io/scrape: 'true'
+  prometheus.io/path: '/stats/prometheus'
+  inject.istio.io/templates: 'gateway'   
+  sidecar.istio.io/inject: 'true'
+  config.kubernetes.io/depends-on: istio-system/deployments/istiod
