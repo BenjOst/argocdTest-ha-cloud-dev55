@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: default
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      targetRevision: 25.22.0
+      chart: prometheus
+      helm:
+        valueFiles:
+        - $values/apps/prometheus/base/values.yaml
+    - repoURL: 'https://github.com/BenjOst/argocdTest-ha-cloud-dev55.git'
+      targetRevision: HEAD      
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions:
+        - .webhooks[]?.clientConfig.caBundle
+        - .webhooks[]?.failurePolicy
+        - .webhooks[]?.namespaceSelector          
